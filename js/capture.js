@@ -93,6 +93,7 @@
 
     startbutton.addEventListener('click', function(ev){
       takepicture();
+      post_photo();
       ev.preventDefault();
     }, false);
 
