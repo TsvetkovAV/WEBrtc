@@ -38,6 +38,42 @@
   height: 360px;
 }
 
+.calibr {
+  background: url(../static/calibr.png) no-repeat;
+  background-size: contain;
+  z-index: 100;
+  opacity: 0.4;
+  display: none;
+  position: absolute;
+  width: 320px;
+  height: 180px;
+}
+
+.calibr_1 {
+  left: 160px;
+  top: 45px;
+}
+
+.calibr_2 {
+  left: 275px;
+  top: 150px;
+}
+
+.calibr_3 {
+  left: 160px;
+  top: 255px;
+}
+
+.calibr_4 {
+  left: 45px;
+  top: 150px;
+}
+
+.calibr_5 {
+  left: 160px;
+  top: 150px;
+}
+
 #startbutton {
   display: block;
   position: relative;
