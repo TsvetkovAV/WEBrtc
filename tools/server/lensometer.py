@@ -278,7 +278,7 @@ class Lensometer():
             self.hierarchy = hierarchy[0]
             contour_index = range(len(self.contours))
             self.cont_types = [self.is_our_contour(x) for x in self.contours]
-            print('cont_types',len(self.cont_types),len(selfself.contours))
+            print('cont_types',len(self.cont_types),len(self.contours))
             self.ctypes     = [self.get_ins_cont_num(x) for x in zip(self.cont_types,self.hierarchy,contour_index)]
 
             # sort self.circles_grid
