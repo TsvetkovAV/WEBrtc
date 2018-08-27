@@ -1,12 +1,14 @@
 (function() {
-  var width = 640;    // We will scale the photo width to this
+  var width = 1280;    // We will scale the photo width to this
   var height = 0;     // This will be computed based on the input stream
 
   // |streaming| indicates whether or not we're currently streaming
   // video from the camera. Obviously, we start at false.
 
-  var cmd = 'calibr';
+  // var cmd = 'calibr';
+  var cmd = 'calc';
   var counter = 1;
+  var statusText = null;
 
   var streaming = false;
 
@@ -28,15 +30,16 @@
     layer = document.getElementById('layer');
     calibr = document.getElementById('calibr');
     downloadbutton = document.getElementById('download');
+    statusText = document.getElementById('status');
 
     navigator.getMedia = ( navigator.getUserMedia ||
                            navigator.webkitGetUserMedia ||
                            navigator.mozGetUserMedia ||
                            navigator.msGetUserMedia);
-
+    is_mobile = navigator.userAgent.indexOf('Mobile') != -1
     navigator.getMedia(
       {
-        video: { facingMode: { exact: "environment" } },
+        video: { facingMode:is_mobile ? { exact: "environment" } : {} },
         audio: false
       },
       function(stream) {
@@ -74,7 +77,7 @@
         // the video, so we will make assumptions if this happens.
 
         if (isNaN(height)) {
-          height = width / (4/3);
+          height = width / (16/9);
         }
 
         video.setAttribute('width', width);
@@ -93,7 +96,8 @@
 
     startbutton.addEventListener('click', function(ev){
       takepicture();
-      post_photo();
+      // post_photo();
+      post_photo_and_get_result();
       ev.preventDefault();
     }, false);
 
@@ -128,7 +132,7 @@
         calibr.style.left = '45px';
         calibr.style.top = '150px';
         break;
-      case 5:
+      case 0:
         calibr.style.left = '160px';
         calibr.style.top = '150px';
         break;
@@ -150,13 +154,25 @@
 
   function downloadPictures() {
     pictures.forEach(function(data, i) {
-      var link = document.createElement("a");
-      link.download = i+'.png';
-      link.href = data;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      delete link;
+
+      var a = document.createElement("a");
+      document.body.appendChild(a);
+      a.style = "display: none";
+      var json = JSON.stringify(data),
+          blob = new Blob([json], {type: "image/png"}),
+          url = window.URL.createObjectURL(blob);
+      a.href = url;
+      a.download = i+'.png';
+      a.click();
+      window.URL.revokeObjectURL(a);
+      //
+      // var link = document.createElement("a");
+      // link.download = i+'.png';
+      // link.href = data;
+      // document.body.appendChild(link);
+      // link.click();
+      // document.body.removeChild(link);
+      delete a;
     })
     pictures = [];
   }
@@ -169,12 +185,52 @@
       context.drawImage(video, 0, 0, width, height);
 
       var data = canvas.toDataURL('image/png');
-      pictures.push(data);
       photo.setAttribute('src', data);
     } else {
       clearphoto();
     }
   }
+
+  function changeUnderPhotoText(text) {
+    statusText.innerText = text;
+  }
+
+  // ---------
+  // send photo by POST and get result
+  function post_photo_and_get_result() {
+    getPhotoForPost =  function (blob) {
+      if (blob) {
+        sendBlobByPostAndGetResult(blob);
+      } else console.log('Cant get photo\n');
+    }
+    if (captureDevice != null) {
+      console.log('Try get photo for post\n');
+      var options = {imageHeight: 720, imageWidth: 1280};
+      captureDevice.takePhoto(options)
+      .then(getPhotoForPost).catch(catchPhoto);
+    }
+  }
+  function sendBlobByPostAndGetResult(blob) {
+    pictures.push(blob);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", '/mesure?uid=1&dsetnm=first&cmd=calc', true);
+
+    xhr.onreadystatechange = function() {
+        if (this.readyState != 4) return;
+        changeUnderPhotoText(this.response);
+    };
+    xhr.upload.onprogress = function(e) {
+      if (e.lengthComputable) {
+
+        console.log('Send .. '+ ((e.loaded / e.total) * 100) );
+      }
+    };
+    console.log('Send photo\n');
+    var formData = new FormData();
+    formData.append('blob', blob);
+    xhr.send(formData);
+  }
+
 
   // ---------
   // send photo by POST
@@ -186,7 +242,9 @@
     }
     if (captureDevice != null) {
       console.log('Try get photo for post\n');
-      captureDevice.takePhoto().then(getPhotoForPost).catch(catchPhoto);
+      var options = {imageHeight: 720, imageWidth: 1280};
+      captureDevice.takePhoto(options)
+      .then(getPhotoForPost).catch(catchPhoto);
     }
   }
 
@@ -200,14 +258,22 @@
     if (cmd === 'calibr') {
       xhr.open("POST", '/mesure?uid=1&dsetnm=first&cmd=calibr', true);
     } else {
-      xhr.open("POST", '/chequer?uid=1&dsetnm=first&cmd=calc', true);
+      xhr.open("POST", '/mesure?uid=1&dsetnm=first&cmd=calc', true);
     }
 
     xhr.onreadystatechange = function() {
         if (this.readyState != 4) return;
+        changeUnderPhotoText(this.response);
         console.log('POST '+this.responseText);
-        if (cmd = 'calibr') {
+        if (cmd === 'calibr') {
           setUpCalibr()
+        }
+        var resp = JSON.parse(this.responseText);
+        if (resp.ret == 0) {
+          if (resp.status != true ) {
+              console.log('Bad photo '+resp.cnt);
+          }
+
         }
         counter += 1;
         if (counter === 10) {
@@ -231,11 +297,11 @@
     // get result
     var xhr1 = new XMLHttpRequest();
     xhr1.responseType = 'json';
-    xhr1.open("GET", '/result?uid=1&dsetnm=first&cmd=result', true);
+    xhr1.open("GET", '/result?uid=1&dsetnm=first&cmd=dset-stop', true);
     xhr1.onload = function(e) {
       if (this.status == 200) {
         var resp = this.response;
-        if ((resp.json.status === true) && (cmd === 'calibr')) {
+        if ((resp.status === true) && (cmd === 'calibr')) {
           cmd = 'calc'
           layer.style.display = 'block';
           setUpCalibr();

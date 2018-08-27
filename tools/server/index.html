@@ -1,0 +1,220 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Lensometer demo</title>
+    <style type="text/css">
+video {
+  height: 450px;
+  margin: 2px 2px 2px 0;
+  vertical-align: top;
+  float: left;
+  width: calc(100% - 12px);
+  
+  /*-o-object-fit: cover;
+     object-fit: cover;*/
+}
+video#rvideo {
+  height: 450px;
+  margin: 5px 10px 10px 0;
+}
+video#video {
+  margin: 5px 10px 10px 0;
+  z-index: -1;
+  
+}
+img#photo {
+  height: 200px;
+}
+img#photo {
+  margin: 10px 10px 10px 10px;
+  vertical-align: top;
+}
+button {
+  margin: 0 20px 0 0;
+  width: 83px;
+}
+
+button#start {
+    margin: 0;
+}
+.highlight {
+  background-color: #eee;
+  font-size: 1.2em;
+  margin: 0 0 30px 0;
+  padding: 0.2em 1.5em;
+}
+body {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+}
+div.outputSelector {
+margin: -1.3em 0 2em 0;
+}
+div#container {
+margin: 0 auto 0 auto;
+max-width: 95em;
+padding: 1em 1.5em 1.3em 1.5em;
+}
+.overlay {
+  min-height: 100vh;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+          z-index:1;
+}
+.overlay h2 {
+    background: #004A8B none repeat scroll 0 0;
+    color: white;
+    font-weight: bold;
+    font-size: 8vh;
+    /* margin: 5vh 8vh; */
+    mix-blend-mode: overlay;
+    padding: 6vh 8vh;
+    text-align: center;
+    border-radius: 0.4em;
+}
+.textoverlay {
+    position:absolute;
+    top:0;
+    left:100;
+    z-index:1;
+}
+div#overvideo {
+  margin: auto;
+  position: relative;
+  text-align: center;
+  font-size: 3em;
+}
+#player {
+    	float:left;
+    	padding:1em 1em .5em;
+    	background-color:black;
+      border:2px solid darkgreen;
+      border-radius: 9px;
+    }
+#controls {
+      border: 1px solid darkgreen;
+      width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+      margin-top: 5px;
+      padding-bottom: 3px;
+      border-radius: 7px;
+    }
+</style>
+</head>
+<body>
+<div id="container">
+
+
+<h1 class="highlight"> <span>Lensometer (Communication with WebRTC)</span></h1>
+<div>
+<table border="0" width="100%" cellspacing="1" cellpadding="0" bgcolor="#000000">
+   <!--caption><h3>Media and data channel</h3></caption-->
+   <tr bgcolor="#FFFFFF">
+    <th class="highlight">Media</th><th class="highlight">Data channel  </th>
+   </tr>
+   <tr bgcolor="#FFFFFF">
+    <td width="60%"><center>
+    <div id="media" >
+    <!--h2>Media</h2-->
+    <!--p>You should see a video alternating between green and your camera</p-->
+     <audio id="audio" autoplay="true" style="display: none"></audio>
+     <video id="video" autoplay="false"  controls muted style="display: none" capture></video>
+            <!--div class="textoverlay"--> 
+                <!--div id="overlay">
+                    <h2>Content above your video</h2>
+                </div-->
+                <!--/div-->
+            <!--div id='controls'>
+			  <button id='calculate' class='calculate' title='Calc'  onclick='calculate();'>calculate</button>
+            </div-->
+        <!--video id="rvideo" autoplay="false" controls muted style="display: none"></video-->
+        <!--img id="photo" src="" style="display: none"-->
+    </div>
+    </center>
+    </td>
+    <td width="40%">
+     <!--h2>Data channel</h2-->
+     <pre id="data-channel" style="height: 400px; overflow-y: scroll"></pre>
+    </td>
+   </tr>
+ </table>
+</div>
+ <p></p>
+ <div class="highlight">
+ <button id="start" onclick="start()">Start</button>
+ <button id="stop" style="display: none" onclick="stop()">Stop</button>
+ <!--input type="file" accept="image/*;capture=camera"-->
+ <!--button id="call" style="display: none" onclick="on_call()">Call</button-->
+ <!--button id="hangup" style="display: none" onclick="on_hangup()">Hangup</button-->
+ <!--button id="get-photo"  onclick="post_photo()">Photo</button-->
+ <button id="calc" style="display: none" onclick="on_calc_by_photo()">Calc</button>
+ <button id="dset" style="display: none" onclick="on_dset()">Dset</button>
+ <button id="chequer" style="display: none" onclick="on_chequer()">Chequer</button>
+ <button id="dset-stop" style="display: none" onclick="on_dset_stop()">Stop dset</button>
+ <label id="foruuid" style="display: none" for="uuid">UUID</label> <input  id="uuid" style="display: none"   name="uuid" value="" placeholder="UID" >
+ </div>
+ <table border="0" width="100%" cellspacing="1" cellpadding="0" bgcolor="#000000">
+ <tr bgcolor="#FFFFFF" class="highlight">
+    <th >Datachannel</th><!--th >Audio  </th--><th >Video </th><th >Process</th>
+   </tr>
+<tr bgcolor="#FFFFFF">
+<td>
+<label for="use-datachannel">Use</label>
+<input id="use-datachannel" checked="checked" type="checkbox"/>
+<label for="ping">Ping</label><input id="ping" type="checkbox"/>
+</td>
+<!--td>
+<label for="use-audio">Use</label>
+<input id="use-audio"  type="checkbox"/>
+</td-->
+<td>
+<!--label for="use-video">Use</label-->
+<!--input id="use-video" type="checkbox" /-->
+<label for="video-fps">FPS</label>
+<select id="video-fps" >
+  <option>5</option>
+  <option selected="selected">10</option>
+  <option>15</option>
+  <option>24</option>
+</select>
+<!--label for="hide-local">Hide local</label-->
+<!--input id="hide-local" type="checkbox" onclick="on_hide()"/-->
+</td><td>
+<!--label for="proc-video"> Process video</label-->
+<!--input id="proc-video" type="checkbox" /-->
+<label for="algorithm">Algorithm=1</label>
+<input id="algorithm" type="checkbox" checked="checked" />
+<label id="for-dset" style="display: inline-block" for="dset-nm">DSET</label> <input  id="dset-nm" style="display: inline-block"   name="dset-nm" value="" placeholder="Data set name" >
+</td>
+
+</tr>
+</table>
+
+<p></p>
+<table border="0" width="100%" cellspacing="1" cellpadding="0" bgcolor="#000000">
+   <caption><h3  class="highlight">WebRTC connection states</h2></caption>
+   <tr bgcolor="#FFFFFF">
+    <th>ICE gathering state</th><th>ICE connection state</th><th>Signaling state</th>
+   </tr>
+   <tr bgcolor="#FFFFFF">
+    <td><span id="ice-gathering-state"></span></td>
+    <td><span id="ice-connection-state"></span></td>
+    <td><span id="signaling-state"></span></td>
+   </tr>
+ </table>
+<p></p>
+</div>
+
+<script src="client.js"></script>
+
+</body>
+</html>

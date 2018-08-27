@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Card resize</title>
+<style>
+.highlight {
+  background-color: #eee;
+  font-size: 1.2em;
+  margin: 0 0 30px 0;
+  padding: 0.2em 1.5em;
+}
+body {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+}
+div#container {
+margin: 0 auto 0 auto;
+max-width: 95em;
+padding: 10em 10.5em 10.3em 10.5em;
+}
+</style>
+</head>
+
+<body>
+<div id="container">
+    <h1 class="highlight"> <span>Lensometer calibration</span></h1>
+    <img src="img/card.png" id="image" width="258">
+    
+    <br>
+    <div class="highlight">
+    <button id="scaleUp">+</button>
+    <button id="scaleDown">-</button>
+    <button id="setSize" onclick="printSize()">OK</button>
+    <button id="goBack" onclick="back()" style="display: none" >Back</button>
+    <button id="goMesure" onclick="mesure()" style="display: none" >Mesure</button>
+    </div>
+    <div class="highlight">
+      <p id="output"></p>
+      <p id="channelLog"></p>
+    </div>
+    
+    <br>
+    
+    
+</div>    
+<script src="calibr.js"></script>
+</body>
+</html>
